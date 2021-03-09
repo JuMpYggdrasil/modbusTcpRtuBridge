@@ -21,7 +21,8 @@
 #define FROM_REG 0 //address map from ModbusRTU
 #define n_LEN_Hreg 30   //size of address table holding register
 #define n_LEN_Ireg 30   //size of address table input register
-#define n_LEN_Coil 14   //size of address table coil
+#define n_LEN_Coil 14   //size of address table coil status
+#define n_LEN_Ists 1   //size of address table input status
 
 #ifdef USE_STATIC_IP
 IPAddress local_IP(192, 168, 1, 41);
@@ -105,6 +106,7 @@ void setup() {
     mbTCP.addHreg(0, 0, n_LEN_Hreg);//start address, data value, n of length of address
     mbTCP.addIreg(0, 0, n_LEN_Ireg);
     mbTCP.addCoil(0, COIL_VAL(true), n_LEN_Coil);
+    mbTCP.addIsts(0, 0, n_LEN_Ists);
     //callback fn
     //mbTCP.onGetCoil(0, callbackGetCoil, n_LEN_Coil);
     mbTCP.onSetCoil(0, callbackSetCoil, n_LEN_Coil);
@@ -134,6 +136,15 @@ void loop() {
     mbTCP.task();
     if (!mbRTU.slave()) {
         mbRTU.pullIreg(PULL_ID, FROM_REG, TO_REG, n_LEN_Ireg);
+        while (mbRTU.slave()) {
+            mbRTU.task();
+            delay(50);
+        }
+    }
+    mbRTU.task();
+    mbTCP.task();
+    if (!mbRTU.slave()) {
+        mbRTU.pullIsts(PULL_ID, FROM_REG, TO_REG, n_LEN_Ists);
         while (mbRTU.slave()) {
             mbRTU.task();
             delay(50);
