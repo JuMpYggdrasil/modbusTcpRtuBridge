@@ -19,8 +19,9 @@
 #define SLAVE_ID 1 //ID of ModbusIP
 #define PULL_ID 1  //ID of ModbusRTU
 #define FROM_REG 0 //address map from ModbusRTU
-#define n_LEN 100   //size of address table
-
+#define n_LEN_Hreg 30   //size of address table holding register
+#define n_LEN_Ireg 30   //size of address table input register
+#define n_LEN_Coil 14   //size of address table coil
 
 #ifdef USE_STATIC_IP
 IPAddress local_IP(192, 168, 1, 41);
@@ -29,7 +30,8 @@ IPAddress subnet(255, 255, 255, 0);
 IPAddress primaryDNS(8, 8, 8, 8);
 #endif
 
-
+const char* ssid = "JUMP";
+const char* passssid = "025260652";
 
 ModbusRTU mbRTU;
 ModbusIP mbTCP;
@@ -83,7 +85,7 @@ void setup() {
 #ifdef USE_STATIC_IP
     WiFi.config(local_IP, primaryDNS, gateway, subnet);
 #endif
-    WiFi.begin("JUMP", "025260652");//MAC 2C:F4:32:4C:C2:E8
+    WiFi.begin(ssid, passssid);//MAC 2C:F4:32:4C:C2:E8
     WiFi.hostname("EGAT");
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -100,19 +102,19 @@ void setup() {
     //mbRTU.begin(&Serial2, 17);  // Specify RE_DE control pin
     mbRTU.master();
     mbTCP.server();
-    mbTCP.addHreg(0, 0, n_LEN);//start address, data value, n of length of address
-    mbTCP.addIreg(0, 0, n_LEN);
-    mbTCP.addCoil(0, COIL_VAL(true), n_LEN);
+    mbTCP.addHreg(0, 0, n_LEN_Hreg);//start address, data value, n of length of address
+    mbTCP.addIreg(0, 0, n_LEN_Ireg);
+    mbTCP.addCoil(0, COIL_VAL(true), n_LEN_Coil);
     //callback fn
-    //mbTCP.onGetCoil(0, callbackGetCoil, n_LEN);
-    mbTCP.onSetCoil(0, callbackSetCoil, n_LEN);
-    //mbTCP.onGetHreg(0, callbackGetHreg, n_LEN);
-    mbTCP.onSetHreg(0, callbackSetHreg, n_LEN);
+    //mbTCP.onGetCoil(0, callbackGetCoil, n_LEN_Coil);
+    mbTCP.onSetCoil(0, callbackSetCoil, n_LEN_Coil);
+    //mbTCP.onGetHreg(0, callbackGetHreg, n_LEN_Hreg);
+    mbTCP.onSetHreg(0, callbackSetHreg, n_LEN_Hreg);
 }
 
 void loop() {
     if (!mbRTU.slave()) {
-        mbRTU.pullHreg(PULL_ID, FROM_REG, TO_REG, n_LEN);
+        mbRTU.pullHreg(PULL_ID, FROM_REG, TO_REG, n_LEN_Hreg);
         while (mbRTU.slave()) {
             mbRTU.task();
             delay(50);
@@ -121,7 +123,7 @@ void loop() {
     mbRTU.task();
     mbTCP.task();
     if (!mbRTU.slave()) {
-        mbRTU.pullCoil(PULL_ID, FROM_REG, TO_REG, n_LEN);
+        mbRTU.pullCoil(PULL_ID, FROM_REG, TO_REG, n_LEN_Coil);
         //mbRTU.readCoil(1, 1, coils, 20, cbWrite);
         while (mbRTU.slave()) {
             mbRTU.task();
@@ -131,7 +133,7 @@ void loop() {
     mbRTU.task();
     mbTCP.task();
     if (!mbRTU.slave()) {
-        mbRTU.pullIreg(PULL_ID, FROM_REG, TO_REG, n_LEN);
+        mbRTU.pullIreg(PULL_ID, FROM_REG, TO_REG, n_LEN_Ireg);
         while (mbRTU.slave()) {
             mbRTU.task();
             delay(50);
