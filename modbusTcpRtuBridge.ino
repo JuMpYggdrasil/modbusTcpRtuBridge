@@ -15,9 +15,9 @@
 //      callback handle set value from TCP MASTER to RTU SLAVE.
 // help https://www.modbustools.com/modbus.html#Function01
 
-#define TO_REG 0   //address map to ModbusIP (can map address with offset)
 #define SLAVE_ID 1 //ID of ModbusIP
 #define PULL_ID 1  //ID of ModbusRTU
+#define TO_REG 0   //address map to ModbusIP (can map address with offset)
 #define FROM_REG 0 //address map from ModbusRTU
 #define n_LEN_Hreg 30   //size of address table holding register
 #define n_LEN_Ireg 30   //size of address table input register
@@ -81,7 +81,7 @@ uint16_t callbackSetHreg(TRegister* reg, uint16_t val) {
 }
 
 void setup() {
-    Serial.begin(9600, SERIAL_8N1);
+    Serial.begin(38400, SERIAL_8N1);
 
 #ifdef USE_STATIC_IP
     WiFi.config(local_IP, primaryDNS, gateway, subnet);
